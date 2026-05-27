@@ -1,0 +1,99 @@
+---
+layout: default
+---
+
+<section class="site-hero">
+  <div class="hero-eyebrow">// sysadmin · geek · papa · bretagne</div>
+  <h1 class="hero-title">Tutos techniques, retours d'expérience,<br>et ce qui se passe <em>en dehors du terminal.</em></h1>
+</section>
+
+<div class="tag-filter" id="tag-filter">
+  <button class="tag-pill active" data-tag="tous">#tous</button>
+  <button class="tag-pill" data-tag="windows">#windows</button>
+  <button class="tag-pill" data-tag="intune">#intune</button>
+  <button class="tag-pill" data-tag="activedirectory">#activedirectory</button>
+  <button class="tag-pill" data-tag="powershell">#powershell</button>
+  <button class="tag-pill" data-tag="m365">#m365</button>
+  <button class="tag-pill" data-tag="linux">#linux</button>
+  <button class="tag-pill" data-tag="culture">#culture</button>
+  <button class="tag-pill" data-tag="gaming">#gaming</button>
+  <button class="tag-pill" data-tag="metal">#metal</button>
+</div>
+
+{% assign it_posts = site.posts | where_exp: "post", "post.section == 'it'" %}
+{% assign culture_posts = site.posts | where_exp: "post", "post.section == 'culture'" %}
+
+{% if it_posts.size > 0 %}
+<div class="section-label" data-section="it">
+  <span class="section-dot dot-it"></span>
+  <span>Informatique</span>
+</div>
+<ul class="post-list" id="list-it">
+  {% for post in it_posts %}
+  <li class="post-item" data-tags="{{ post.tags | join: ',' }}" onclick="window.location='{{ post.url | relative_url }}'">
+    <span class="post-date">{{ post.date | date: "%d %b %Y" }}</span>
+    <div class="post-body">
+      <div class="post-title">{{ post.title }}</div>
+      {% if post.description %}
+      <div class="post-excerpt">{{ post.description }}</div>
+      {% endif %}
+    </div>
+    <span class="post-tag-label">{% if post.tags.first %}#{{ post.tags.first }}{% endif %}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if culture_posts.size > 0 %}
+<div class="section-label" data-section="culture">
+  <span class="section-dot dot-cu"></span>
+  <span>Culture</span>
+</div>
+<ul class="post-list" id="list-cu">
+  {% for post in culture_posts %}
+  <li class="post-item" data-tags="{{ post.tags | join: ',' }}" onclick="window.location='{{ post.url | relative_url }}'">
+    <span class="post-date">{{ post.date | date: "%d %b %Y" }}</span>
+    <div class="post-body">
+      <div class="post-title">{{ post.title }}</div>
+      {% if post.description %}
+      <div class="post-excerpt">{{ post.description }}</div>
+      {% endif %}
+    </div>
+    <span class="post-tag-label">{% if post.tags.first %}#{{ post.tags.first }}{% endif %}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<script>
+const pills = document.querySelectorAll('.tag-pill');
+const items = document.querySelectorAll('.post-item');
+const sections = document.querySelectorAll('.section-label');
+
+pills.forEach(pill => {
+  pill.addEventListener('click', () => {
+    pills.forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    const tag = pill.dataset.tag;
+
+    items.forEach(item => {
+      if (tag === 'tous') {
+        item.style.display = '';
+      } else {
+        const tags = item.dataset.tags.split(',');
+        item.style.display = tags.includes(tag) ? '' : 'none';
+      }
+    });
+
+    // Masquer les labels de section si aucun article visible dans la section
+    ['it', 'cu'].forEach(sec => {
+      const label = document.querySelector(`.section-label[data-section="${sec}"]`);
+      const list  = document.getElementById(`list-${sec}`);
+      if (!label || !list) return;
+      const visible = [...list.querySelectorAll('.post-item')].some(i => i.style.display !== 'none');
+      label.style.display = visible ? '' : 'none';
+      list.style.display  = visible ? '' : 'none';
+    });
+  });
+});
+</script>
