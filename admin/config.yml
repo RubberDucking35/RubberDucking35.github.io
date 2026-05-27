@@ -1,0 +1,46 @@
+backend:
+  name: github
+  repo: RubberDucking35/RubberDucking35.github.io
+  branch: main
+
+media_folder: "assets/images"
+public_folder: "/assets/images"
+
+collections:
+  - name: "it"
+    label: "Informatique"
+    folder: "_posts"
+    create: true
+    filter: {field: "section", value: "it"}
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Layout", name: "layout", widget: "hidden", default: "post"}
+      - {label: "Titre", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "string"}
+      - {label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "DD/MM/YYYY", time_format: false}
+      - {label: "Section", name: "section", widget: "hidden", default: "it"}
+      - label: "Tags"
+        name: "tags"
+        widget: "select"
+        multiple: true
+        options: ["windows", "intune", "activedirectory", "powershell", "m365", "linux", "azure", "scripting"]
+      - {label: "Contenu", name: "body", widget: "markdown"}
+
+  - name: "culture"
+    label: "Culture"
+    folder: "_posts"
+    create: true
+    filter: {field: "section", value: "culture"}
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Layout", name: "layout", widget: "hidden", default: "post"}
+      - {label: "Titre", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "string"}
+      - {label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "DD/MM/YYYY", time_format: false}
+      - {label: "Section", name: "section", widget: "hidden", default: "culture"}
+      - label: "Tags"
+        name: "tags"
+        widget: "select"
+        multiple: true
+        options: ["gaming", "metal", "manga", "sf", "fantasy", "cinema", "bd", "comics", "culture"]
+      - {label: "Contenu", name: "body", widget: "markdown"}
