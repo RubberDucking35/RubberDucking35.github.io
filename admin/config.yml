@@ -2,6 +2,8 @@ backend:
   name: github
   repo: RubberDucking35/RubberDucking35.github.io
   branch: main
+  base_url: https://rubberduck-auth.francois-spam-3556.workers.dev
+  auth_endpoint: /auth
 
 media_folder: "assets/images"
 public_folder: "/assets/images"
