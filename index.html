@@ -7,17 +7,15 @@ layout: default
   <h1 class="hero-title">Tutos techniques, retours d'expérience,<br>et ce qui se passe <em>en dehors du terminal.</em></h1>
 </section>
 
+{% assign all_tags = site.posts | map: "tags" | join: "," | split: "," | uniq | sort %}
 <div class="tag-filter" id="tag-filter">
   <button class="tag-pill active" data-tag="tous">#tous</button>
-  <button class="tag-pill" data-tag="windows">#windows</button>
-  <button class="tag-pill" data-tag="intune">#intune</button>
-  <button class="tag-pill" data-tag="activedirectory">#activedirectory</button>
-  <button class="tag-pill" data-tag="powershell">#powershell</button>
-  <button class="tag-pill" data-tag="m365">#m365</button>
-  <button class="tag-pill" data-tag="linux">#linux</button>
-  <button class="tag-pill" data-tag="culture">#culture</button>
-  <button class="tag-pill" data-tag="gaming">#gaming</button>
-  <button class="tag-pill" data-tag="metal">#metal</button>
+  {% for tag in all_tags %}
+    {% assign tag_clean = tag | strip %}
+    {% if tag_clean != "" %}
+      <button class="tag-pill" data-tag="{{ tag_clean }}">#{{ tag_clean }}</button>
+    {% endif %}
+  {% endfor %}
 </div>
 
 {% assign it_posts = site.posts | where_exp: "post", "post.section == 'it'" %}
