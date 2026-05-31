@@ -1,0 +1,104 @@
+---
+layout: post
+title: "La mise en place du LAB : Architecture et Isolation Réseau"
+description: "La création d'une DMZ sécurisée pour un Homelab sur base Synology et Debian"
+date: 2026-05-31
+section: IT
+tags: [Synology, Debian, Réseau, DMZ]
+---
+
+J'ai travaillé avec les moyens du bord, car le budget est toujours complexe quand on veut construire un HomeLab (récup, licence, etc...).
+
+## Matériel
+
+- NAS Synology DS923+
+- Serveur sous Debian
+- Livebox Orange
+- De la patience
+
+Je me suis imposé une contrainte technique, mon NAS ayant 2 ports Ethernet, j'ai voulu utiliser celui qui était libre pour mettre mon serveur Linux, que le NAS fasse le pont, car Orange bride ses utilisateurs publics pour la partie réseaux (route statique).
+
+Je suis parti dans cette direction pour garder la puissance du I7, plutôt que de simples VM, et aussi donner des alternatives d'architectures pour du homelab.
+
+## Installer le serveur Debian
+
+Options d'installation :
+
+- ISO : Debian 13 netinstall
+- Langue : Français
+- Partitionnement : Assisté — LVM sur sda uniquement
+- Schéma : Tout dans une seule partition
+- Logiciels : Utilitaires système + Serveur SSH uniquement (pas de GUI)
+- GRUB : sur /dev/sda
+
+```
+sda1  →  /boot      (976MB, ext4)
+sda5  →  LVM PV     (237.5GB)
+            └── blackwall-vg
+                ├── root    225.4GB  /
+                └── swap_1   12.1GB  [SWAP]
+```
+
+## Configuration réseau
+
+| Équipement | Interface | Rôle | IP |
+|------------|-----------|------|----|
+| **Livebox** | - | Passerelle Internet | 192.168.1.1 |
+| **NAS (LAN1)** | `ovs_eth0` | Vers Livebox | 192.168.1.20 |
+| **NAS (LAN2)** | `ovs_eth1` | Vers BlackWall | 192.168.10.21 |
+| **BlackWall** | `eno1` | Serveur Debian | 192.168.10.50 |
+
+J'isole mon serveur (192.168.10.x), pour éviter si un jour un élément du serveur (conteneur docker par exemple) est compromis, ça resterait dans cette DMZ.
+
+## Serveur Debian
+
+```bash
+nano /etc/network/interfaces
+```
+
+```
+auto lo
+iface lo inet loopback
+
+auto eno1
+iface eno1 inet static
+    address 192.168.10.50
+    netmask 255.255.255.0
+    gateway 192.168.10.21
+    dns-nameservers 1.1.1.1 1.0.0.1
+```
+
+```bash
+systemctl restart networking
+```
+
+## NAS (Port Libre)
+
+DSM → Panneau de config → Réseau → Interface réseau → LAN2 :
+
+- IP statique : 192.168.10.21
+- Masque : 255.255.255.0
+- Passerelle : vide
+
+```
+ovs_eth0 → 192.168.1.20  (LAN1 — vers Livebox)
+ovs_eth1 → 192.168.10.21 (LAN2 — vers BlackWall)
+```
+
+Il ne fait pas que transmettre, il fait du NAT/Masquerading pour que le serveur accède au web.
+
+## Configuration Iptables du NAS
+
+Ne pouvant pas faire certaines manipulations à travers l'interface du NAS, et après avoir mis ma patience à rude épreuve, je suis passé par l'iptable du NAS, avec un script :
+
+[Script iptables NAS Synology](https://github.com/RubberDucking35/Iptable-NAS-Synology/tree/main)
+
+Et une tache planifiée sur le NAS à chaque redémarrage car l'Iptable se remet à zéro après chaque démarrage ([documentation iptables](https://wiki.debian.org/iptables)).
+
+Linux flush les règles au reboot, d'où la nécessité du script automatique.
+
+Je n'ai pas voulu tester iptables-persistent car bon on n'est censé trop jouer avec le noyau Linux de notre NAS.
+
+Bien sur cette architecture à un risque, le NAS devient un coeur réseau (s'il s'éteint plus rien), mais on est sur du homelab, demain je peux très tout reprendre à ZERO.
+
+Dans le prochain article je vais aborder Docker.
